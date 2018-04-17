@@ -1,6 +1,11 @@
 # V8Android
 A demo APP for embedding V8 engine in Android APP
 
+1.git clone https://github.com/cstsinghua/V8Android.git;
+2.enter app/src/main/cpp/static_lib directory,unzip v8_arm_arm64.zip,then copy all subdirs(arm64-v8a/armeabi-v7a/include/v8_src_include) to app/src/main/cpp directory(overwrite the old files);
+3.open Android studio(version 3.1 is recommended),open and load this project;
+4.run it and view the result.（you can edit Java and native code if you will）
+
 # 背景
 最近公司的移动引擎(自研，用于公司的游戏APP开发，引擎核心采用C++开发，而游戏的UI和业务逻辑采用Lua语言开发)需要支持Javascript和Lua互相调用(支持Android和IOS两大平台)。刚开始的时候，没有什么头绪。由于之前实现过Lua和Android/IOS原生语言(API)即Java/Object-C的互调，其中Android平台交互原理大致如下图(本文主要基于Android平台讲解。IOS下，OC调用C++更简单，这里暂不赘述)：
 ![](https://i.imgur.com/q5Qk8li.jpg)
