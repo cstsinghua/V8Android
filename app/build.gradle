@@ -1,0 +1,46 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.boyaa.v8wrapper"
+        minSdkVersion 15
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                //arguments "-DANDROID_STL=c++_static","-DANDROID_ALLOW_UNDEFINED_SYMBOLS=TRUE","-DANDROID_TOOLCHAIN=gcc"
+                arguments "-DANDROID_STL=c++_static"
+
+                cppFlags "-std=c++11 -frtti -fexceptions"
+
+                // Specifies the Application Binary Interfaces (ABI) that Gradle should build outputs for.
+                // The ABIs that Gradle packages into your APK are determined by NdkOptions.abiFilter()
+                // abiFilters 'armeabi', 'armeabi-v7a', 'x86'
+                abiFilters 'armeabi-v7a'
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}
