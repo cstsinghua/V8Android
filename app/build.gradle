@@ -19,7 +19,7 @@ android {
                 // Specifies the Application Binary Interfaces (ABI) that Gradle should build outputs for.
                 // The ABIs that Gradle packages into your APK are determined by NdkOptions.abiFilter()
                 // abiFilters 'armeabi', 'armeabi-v7a', 'x86'
-                abiFilters 'armeabi-v7a'
+                abiFilters 'armeabi-v7a','arm64-v8a'
             }
         }
     }
