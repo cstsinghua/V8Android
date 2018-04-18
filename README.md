@@ -180,6 +180,15 @@ v8项目在Github的官方镜像地址为[https://github.com/v8/v8](https://gith
 2. 利用Android studio进行NDK开发，将步骤1中生成的静态库文件进行链接封装，向Java层暴露方法(对应java层的native方法)，最终生成动态库文件；
 3. Android APP内部，原生的Java层可以通过JNI调用步骤2中生成的动态库中的方法(去加载JS代码并执行相关逻辑，然后返回相关数据，反之亦然)
 
+实施前的题外话：
+	如果是为了练练手，那么可以采用v8的最新master分支进行构建即可；但如果是为了用于生产环境，那么请一定采用最新的稳定版本来构建。怎么查询到最新的稳定版本是多少呢？请参见[官方原文说明](https://github.com/v8/v8/wiki/Version-numbers)。本文写作时最新的适用于Android平台的分支是`6.5.254.43`。因此，在执行前，需要先逐一执行以下命令：
+	
+	git pull
+	
+	git checkout branch-heads/6.5
+	
+	gclient sync
+
 具体实施步骤：
 1. 首先与章节`Linux(Ubuntu 16.04)下构建用于Android arm版本的v8(可执行的二进制文件)`(#anchor2)的步骤基本一致，但需要在其第3步修改目标构建平台(即将arm.release改为android.arm.release)，执行命令替换为：
     > tools/dev/v8gen.py gen -m client.v8.ports -b "V8 Android Arm - builder" android.arm.release
@@ -196,8 +205,41 @@ v8项目在Github的官方镜像地址为[https://github.com/v8/v8](https://gith
         v8_static_library = true
 
 	注意：use_goma = false、v8_static_library = true、v8_enable_i18n_support = false都需要添加
-3. 然后重新执行构建，构建完成之后，在v8源码目录下的子目录`out.gn/android.arm.release/obj`下可以找到对应的静态库。然后按照[这篇文章](https://medium.com/@hyperandroid/compile-v8-for-arm-7-df45372f9d4e)的步骤，将相关静态库和头文件聚合整理到一个单独的目录(比如libs，最终将libs目录copy到Android Studio的工程的cpp源文件目录下)。
-4. 新创建一个Android Studio工程(支持C++，利用默认的向导创建完成即可。注：这里AS的版本是3.1，默认采用cmake构建C++代码)，然后将步骤2得到的libs拷贝到工程的cpp源文件对应的目录下。然后就是编辑工程的CMakeLists.txt文件，将libs里面的静态库链接进来。这一步还在调试中，后续进一步补充完善。可先参考[这篇文章](https://medium.com/@hyperandroid/android-v8-embedding-guide-f64173f7958b)。
+3. 然后重新执行构建，构建完成之后，在v8源码目录下的子目录`out.gn/android.arm.release/obj`下可以找到对应的静态库。然后按照[这篇文章](https://medium.com/@hyperandroid/compile-v8-for-arm-7-df45372f9d4e)的步骤，将相关静态库和头文件聚合整理到一个单独的目录(比如libs，最终将libs目录copy到Android Studio的工程的cpp源文件目录下)。这里列出关键示例代码：
+```cmd
+	// Create fat lib files. 
+	// You also could add all .* files into one single library.
+	// 
+	cd out.gn/android_arm.release/obj
+	mkdir libs
+	cd libs
+	// one lib to rule them all.
+	ar -rcsD libv8_base.a ../v8_base/*.o
+	ar -rcsD libv8_base.a ../v8_libbase/*.o
+	ar -rcsD libv8_base.a ../v8_libsampler/*.o
+	ar -rcsD libv8_base.a ../v8_libplatform/*.o 
+	ar -rcsD libv8_base.a ../src/inspector/inspector/*.o
+	// preferred snapshot type: linked into binary.
+	ar -rcsD libv8_snapshot.a ../v8_snapshot/*.o 
+	// depending on snapshot options, you should left out 
+	// v8_snapshot files and include any of these other libs.
+	ar -rcsD libv8_nosnapshot.a ../v8_nosnapshot/*.o
+	ar -rcsD libv8_external_snapshot.a ../v8_external_snapshot/*.o
+	// source headers, for inspector compilation.
+	mkdir -p src/base/platform
+	cp -R ../../../../src/*.h ./src
+	cp -R ../../../../src/base/*.h ./src/base
+	cp -R ../../../../src/base/platform/*.h ./src/base/platform
+	// copy v8 compilation header files:
+	cp -R ../../../../include ./
+	// For compilation on Android, always **use the same ndk** as 
+	// `gclient sync` downloaded. 
+	// As of the time of this writing it was `ndk r12b`
+	// Enjoy v8 embedded in an Android app
+```
+	关于libv8_snapshot.a/libv8_nosnapshot.a/libv8_external_snapshot.a在使用的时候任选其一，这三者的区别如下：
+	Currently, snapshots are compiled by default. These snapshots will contain base objects, like for example, Math. There’s no runtime difference among them, just different initialization times. In my nexus 5x, no snapshot takes around 400ms to initialize an Isolate and a Context, and around 30 with snapshot. The external snapshot and snapshot differ in that the external snapshot must be explicitly loaded (.bin files in the compilation output), and snapshot library is a static lib file of roughly 1Mb in size, that will be linked with the final .so file binary instead of externally loaded. Bear in mind that snapshot libs, internal or external, would require you to supply some extra native code for reading the Natives (.bin) files.
+4. 新创建一个Android Studio工程(支持C++，利用默认的向导创建完成即可。注：这里AS的版本是3.1，默认采用cmake构建C++代码)，然后将步骤2得到的libs拷贝到工程的cpp源文件对应的目录下。然后就是编辑工程的CMakeLists.txt文件，将libs里面的静态库链接进来。具体代码和配置可以参考我的[Github demo](https://github.com/cstsinghua/V8Android)。另外也可参考[这篇文章](https://medium.com/@hyperandroid/android-v8-embedding-guide-f64173f7958b)。
 
 # win10构建v8 engine的心路历程
 
