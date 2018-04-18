@@ -69,8 +69,6 @@ target_link_libraries( # Specifies the target library.
                        # included in the NDK.
                        ${log-lib}
 
-                       android
-
                        v8_base
 
                        v8_snapshot)
