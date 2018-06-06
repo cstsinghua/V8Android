@@ -14,7 +14,7 @@ android {
                 //arguments "-DANDROID_STL=c++_static","-DANDROID_ALLOW_UNDEFINED_SYMBOLS=TRUE","-DANDROID_TOOLCHAIN=gcc"
                 arguments "-DANDROID_STL=c++_static"
 
-                cppFlags "-std=c++11 -frtti -fexceptions"
+                cppFlags "-frtti -fexceptions"
 
                 // Specifies the Application Binary Interfaces (ABI) that Gradle should build outputs for.
                 // The ABIs that Gradle packages into your APK are determined by NdkOptions.abiFilter()

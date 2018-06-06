@@ -9525,7 +9525,7 @@ void ReturnValue<T>::Set(double i) {
 }
 
 template<typename T>
-void ReturnValue<T>::Set(int32_t i) {
+void ReturnValue<T>:: Set(int32_t i) {
   TYPE_CHECK(T, Integer);
   typedef internal::Internals I;
   if (V8_LIKELY(I::IsValidSmi(i))) {

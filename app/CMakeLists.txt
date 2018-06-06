@@ -40,6 +40,11 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
+             src/main/cpp/log.h
+             src/main/cpp/util.h
+             src/main/cpp/util.cpp
+             src/main/cpp/Gamer.h
+             src/main/cpp/Gamer.cpp
              src/main/cpp/native-lib.cpp )
 
 include_directories(src/main/cpp/include)
@@ -68,6 +73,8 @@ target_link_libraries( # Specifies the target library.
                        # Links the target library to the log library
                        # included in the NDK.
                        ${log-lib}
+
+                       android
 
                        v8_base
 

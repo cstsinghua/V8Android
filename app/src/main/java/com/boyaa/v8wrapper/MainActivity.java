@@ -1,5 +1,6 @@
 package com.boyaa.v8wrapper;
 
+import android.content.res.AssetManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -16,9 +17,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        AssetManager mAssetManager = getAssets();
+        nativeInit(mAssetManager);
+
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
+
+        executeJSScript();
     }
 
     /**
@@ -26,4 +32,16 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
+    public native void executeJSScript();
+
+    public native void nativeDestroy();
+
+    public native void nativeInit(AssetManager assetManager);
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        nativeDestroy();
+    }
 }
