@@ -66,7 +66,7 @@ void initV8() {// Initialize V8.
 
     // global->Set(isolate,"globalGamer",WrapGamerObject(isolate,gamer)); //this way is error
 
-    //expose C++ log function to JS global context
+    //expose C++ globalGamer object to JS global context
     global->SetAccessor(
             String::NewFromUtf8(isolate, "globalGamer", NewStringType::kInternalized)
                     .ToLocalChecked(),
