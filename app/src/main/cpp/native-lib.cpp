@@ -64,11 +64,17 @@ void initV8() {// Initialize V8.
     //expose C++ log function to JS global context
     global->Set(isolate, "log", FunctionTemplate::New(isolate, js_log));
 
-    // global->Set(isolate,"gamer",WrapGamerObject(isolate,gamer));
+    // global->Set(isolate,"globalGamer",WrapGamerObject(isolate,gamer)); //this way is error
+
+    //expose C++ log function to JS global context
+    global->SetAccessor(
+            String::NewFromUtf8(isolate, "globalGamer", NewStringType::kInternalized)
+                    .ToLocalChecked(),
+            GetGamer);
 
     //create context containing global obj above
     v8::Local<v8::Context> context = Context::New(isolate, NULL, global);
-//    context->Global()->Set(String::NewFromUtf8(isolate, "gamer", NewStringType::kNormal)
+//    context->Global()->Set(String::NewFromUtf8(isolate, "globalGamer", NewStringType::kNormal)
 //                                   .ToLocalChecked(),WrapGamerObject(isolate,gamer));
     context_.Reset(isolate, context);
     // Enter the new context so all the following operations take place

@@ -35,5 +35,6 @@ public:
 
 };
 
+void GetGamer(Local<String> name, const PropertyCallbackInfo<Value> &info);
 
 #endif //V8ANDROID_GAME_H

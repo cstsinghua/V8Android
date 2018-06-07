@@ -55,3 +55,8 @@ void Gamer::getNameByMethod(const FunctionCallbackInfo<Value> &args) {
     args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(), gamer->getName().c_str(),
                                                   NewStringType::kNormal).ToLocalChecked());
 }
+
+void GetGamer(Local<String> name, const PropertyCallbackInfo<Value> &info) {
+    // Wrap the result in a JavaScript String and return it.
+    info.GetReturnValue().Set(WrapGamerObject(info.GetIsolate(), new Gamer(100, "zhangsanfeng")));
+}
