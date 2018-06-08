@@ -121,6 +121,56 @@ bool ExecuteJSScript(Isolate *isolate, const char *path, bool print_result,
     }
 }
 
+//execute javascript source code and return value
+Handle<Value> ExecuteJSScript2(Isolate *isolate, const char *path, bool print_result,
+                               bool report_exceptions) {
+
+    LOGI("ExecuteScript2");
+    // Create filename
+
+    char *jsChar = openScriptFile(path);
+
+    EscapableHandleScope handle_scope(isolate);
+
+    Local<String> source = String::NewFromUtf8(isolate, jsChar,
+                                               NewStringType::kNormal).ToLocalChecked();
+
+    // Wrap it to support exports and require!
+    Local<String> pre = String::NewFromUtf8(isolate,
+                                            "(function() {var exports = {}; (function(exports) {\n");
+    Local<String> end = String::NewFromUtf8(isolate, "\n})(exports); return exports;})();");
+    Local<String> wrapped = String::Concat(String::Concat(pre, source), end);
+
+    TryCatch try_catch(isolate);
+
+    Local<Context> context(isolate->GetCurrentContext());
+    Local<Script> script;
+    if (!Script::Compile(context, wrapped).ToLocal(&script)) {
+        // Print errors that happened during compilation.
+        if (report_exceptions)
+            ReportException(isolate, &try_catch);
+        return Undefined(isolate);
+    } else {
+        Local<Value> result;
+        if (!script->Run(context).ToLocal(&result)) {
+            assert(try_catch.HasCaught());
+            // Print errors that happened during execution.
+            if (report_exceptions)
+                ReportException(isolate, &try_catch);
+            return Undefined(isolate);
+        } else {
+            assert(!try_catch.HasCaught());
+            if (print_result && !result->IsUndefined()) {
+                // If all went well and the result wasn't undefined then print
+                // the returned value.
+                String::Utf8Value str(isolate, result);
+                LOGI("===========\n%s\n", *str);
+            }
+            return handle_scope.Escape(result);
+        }
+    }
+}
+
 void ReportException(Isolate *isolate, TryCatch *try_catch) {
     HandleScope handle_scope(isolate);
     String::Utf8Value exception(isolate, try_catch->Exception());

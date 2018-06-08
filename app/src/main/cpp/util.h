@@ -15,6 +15,8 @@ void setEnvAndAssetManager(JNIEnv *env, jobject assetManager);
 char *openScriptFile(const char *path);
 bool ExecuteJSScript(Isolate *isolate, const char *path, bool print_result,
                    bool report_exceptions);
+Handle<Value> ExecuteJSScript2(Isolate *isolate, const char *path, bool print_result,
+                   bool report_exceptions);
 void ReportException(Isolate *isolate, TryCatch *try_catch);
 Local<ObjectTemplate> MakeGamerTemplate(
         Isolate* isolate);

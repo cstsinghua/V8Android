@@ -43,6 +43,21 @@ void js_log(const FunctionCallbackInfo<Value> &args) {
     LOGV("js log:%s", cstr);
 }
 
+void js_require(const FunctionCallbackInfo<Value> &args) {
+    String::Utf8Value utf8(isolate, args[0]);
+    std::string str("script/");
+    std::string str1(ToCString(utf8));
+    std::string str2(".js");
+    str.append(str1).append(str2);
+    Handle<Value> module = ExecuteJSScript2(isolate, str.c_str(), true, true);
+    if (module->IsStringObject()) {
+        LOGI("return value of js module");
+    }
+    args.GetReturnValue().Set(module);
+
+
+}
+
 void initV8() {// Initialize V8.
 //    v8::V8::InitializeICUDefaultLocation(nullptr);
 //    v8::V8::InitializeExternalStartupData(nullptr);
@@ -63,6 +78,8 @@ void initV8() {// Initialize V8.
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     //expose C++ log function to JS global context
     global->Set(isolate, "log", FunctionTemplate::New(isolate, js_log));
+    //expose require function to JS global context
+    global->Set(isolate, "require", FunctionTemplate::New(isolate, js_require));
 
     // global->Set(isolate,"globalGamer",WrapGamerObject(isolate,gamer)); //this way is error
 
