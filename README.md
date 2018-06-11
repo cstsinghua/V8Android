@@ -61,7 +61,7 @@ v8项目在Github的官方镜像地址为[https://github.com/v8/v8](https://gith
 7. 生成目标平台必需的构建文件(Generate the necessary build files by executing the following in your terminal/shell）:
     > tools/dev/v8gen.py x64.release
 	
-	**注意：目标平台有很多，可以通过`tools/dev/v8gen.py list`命令查看**。这里以本文写作时的master分支版本为例，执行`tools/dev/v8gen.py --list`命令后，可以看到v8支持如下目标平台构建：
+	**注意：目标平台有很多，可以通过`tools/dev/v8gen.py list`命令查看**。这里以本文写作时的master分支版本为例，执行`tools/dev/v8gen.py list`命令后，可以看到v8支持如下目标平台构建：
     
 		coulsonchen@coulsonchen:/usr/local/v8/v8$ tools/dev/v8gen.py list
 		android.arm.debug
