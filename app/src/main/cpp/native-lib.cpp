@@ -37,10 +37,22 @@ const char *ToCString(const v8::String::Utf8Value &value) {
 }
 
 void js_log(const FunctionCallbackInfo<Value> &args) {
-    // LOGI("js log:%d",args.Length());
-    String::Utf8Value utf8(isolate, args[0]);
-    const char *cstr = ToCString(utf8);
-    LOGV("js log:%s", cstr);
+    int len = args.Length();
+    if (len < 1) return;
+    std::string printstr("");
+    for (int i = 0; i < len; ++i) {
+        String::Utf8Value utf8(isolate, args[i]);
+        if (i == 0) {
+            printstr.append(ToCString(utf8));
+        } else {
+            int location = printstr.find("%s");
+            if (location >= 0) {
+                printstr = printstr.replace(location, 2, ToCString(utf8));
+            }
+        }
+
+    }
+    LOGV("js log:%s", printstr.c_str());
 }
 
 void js_require(const FunctionCallbackInfo<Value> &args) {
@@ -56,6 +68,26 @@ void js_require(const FunctionCallbackInfo<Value> &args) {
     args.GetReturnValue().Set(module);
 
 
+}
+
+void js_readFile(const FunctionCallbackInfo<Value> &args) {
+    // LOGI("js log:%d",args.Length());
+    String::Utf8Value utf8(isolate, args[0]);
+    const char *cstr = ToCString(utf8);
+    const char *source = openScriptFile(cstr);
+    Local<String> js_src = String::NewFromUtf8(isolate, source,
+                                               NewStringType::kNormal).ToLocalChecked();
+    args.GetReturnValue().Set(js_src);
+}
+
+void js_compileJSCode(const FunctionCallbackInfo<Value> &args) {
+    // LOGI("js log:%d",args.Length());
+    String::Utf8Value utf8(isolate, args[0]);
+    const char *cstr = ToCString(utf8);
+    Local<String> js_src = String::NewFromUtf8(isolate, cstr,
+                                               NewStringType::kNormal).ToLocalChecked();
+    Handle<Value> func = ExecuteJSScript3(isolate, js_src, true, true);
+    args.GetReturnValue().Set(func);
 }
 
 void initV8() {// Initialize V8.
@@ -79,7 +111,12 @@ void initV8() {// Initialize V8.
     //expose C++ log function to JS global context
     global->Set(isolate, "log", FunctionTemplate::New(isolate, js_log));
     //expose require function to JS global context
-    global->Set(isolate, "require", FunctionTemplate::New(isolate, js_require));
+    // global->Set(isolate, "require", FunctionTemplate::New(isolate, js_require));
+
+    //expose readFile function to JS global context
+    global->Set(isolate, "readFile", FunctionTemplate::New(isolate, js_readFile));
+    //expose compileJSCode function to JS global context
+    global->Set(isolate, "compileJSCode", FunctionTemplate::New(isolate, js_compileJSCode));
 
     // global->Set(isolate,"globalGamer",WrapGamerObject(isolate,gamer)); //this way is error
 
@@ -98,17 +135,22 @@ void initV8() {// Initialize V8.
     // within it.
     Context::Scope context_scope(context);
     // Create a string containing the JavaScript source code.
-    bool result = ExecuteJSScript(isolate, "script/main.js", true, true);
+    // bool result = ExecuteJSScript(isolate, "script/main.js", true, true);
+    bool result = ExecuteJSScript(isolate, "script/module.js", true, true);
     LOGI("JS Script Execute Result :%d", result);
 
+//    Local<String> process_name =
+//            String::NewFromUtf8(isolate, "Game", NewStringType::kNormal)
+//                    .ToLocalChecked();
     Local<String> process_name =
-            String::NewFromUtf8(isolate, "Game", NewStringType::kNormal)
+            String::NewFromUtf8(isolate, "runMain", NewStringType::kNormal)
                     .ToLocalChecked();
     Local<Value> process_val;
     // If there is no Process function, or if it is not a function,
     if (!context->Global()->Get(context, process_name).ToLocal(&process_val) ||
         !process_val->IsFunction()) {
-        LOGI("Game is not a function\n");
+        // LOGI("Game is not a function\n");
+        LOGI("runMain is not a function\n");
     }
     // It is a function; cast it to a Function
     Local<Function> process_fun = Local<Function>::Cast(process_val);
@@ -161,8 +203,10 @@ void executeJSFunction() {
     // Set up an exception handler before calling the Process function
     TryCatch try_catch(isolate);
 
-    const int argc = 1;
-    Local<Value> argv[argc] = {WrapGamerObject(isolate, gamer)};
+//    const int argc = 1;
+//    Local<Value> argv[argc] = {WrapGamerObject(isolate, gamer)};
+    const int argc = 0;
+    Local<Value> argv[argc] = {};
     v8::Local<v8::Function> process =
             v8::Local<v8::Function>::New(isolate, function_);
     Local<Value> result;

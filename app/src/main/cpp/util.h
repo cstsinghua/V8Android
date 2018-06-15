@@ -9,20 +9,30 @@
 #include <jni.h>
 #include "include/v8.h"
 #include "Gamer.h"
-using  namespace v8;
+
+using namespace v8;
 
 void setEnvAndAssetManager(JNIEnv *env, jobject assetManager);
-char *openScriptFile(const char *path);
-bool ExecuteJSScript(Isolate *isolate, const char *path, bool print_result,
-                   bool report_exceptions);
-Handle<Value> ExecuteJSScript2(Isolate *isolate, const char *path, bool print_result,
-                   bool report_exceptions);
-void ReportException(Isolate *isolate, TryCatch *try_catch);
-Local<ObjectTemplate> MakeGamerTemplate(
-        Isolate* isolate);
-Handle<Object> WrapGamerObject( Isolate* isolate,Gamer *gamer );
-Gamer* UnwrapGamer(Local<Object> obj);
 
+char *openScriptFile(const char *path);
+
+bool ExecuteJSScript(Isolate *isolate, const char *path, bool print_result,
+                     bool report_exceptions);
+
+Handle<Value> ExecuteJSScript2(Isolate *isolate, const char *path, bool print_result,
+                               bool report_exceptions);
+
+Handle<Value> ExecuteJSScript3(Isolate *isolate, Local<String> source, bool print_result,
+                               bool report_exceptions);
+
+void ReportException(Isolate *isolate, TryCatch *try_catch);
+
+Local<ObjectTemplate> MakeGamerTemplate(
+        Isolate *isolate);
+
+Handle<Object> WrapGamerObject(Isolate *isolate, Gamer *gamer);
+
+Gamer *UnwrapGamer(Local<Object> obj);
 
 
 #endif //V8ANDROID_UTIL_H

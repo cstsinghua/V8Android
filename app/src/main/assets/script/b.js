@@ -1,0 +1,14 @@
+log('b starting');
+log('module.exports: ', module.exports);
+exports.done = false;
+const a = require('a');
+log('in b, a.done = %s', a.done);
+exports.done = true;
+log('module.id: ', module.id);
+log('module.exports: ', module.exports);
+log('module.parent: %s', module.parent);
+log('module.filename: %s', module.filename);
+log('module.loaded: %s', module.loaded);
+log('module.children: %s', module.children);
+log('module.paths: %s', module.paths);
+log('b done');
