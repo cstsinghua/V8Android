@@ -13,24 +13,17 @@ function makeRequireFunction(mod) {
         exports.requireDepth -= 1;
       }
     }
-  
+
+    //有可能在创建模块之前使用到该函数，类似于静态函数
+
     function resolve(request, options) {
       if (typeof request !== 'string') {
         throw new ERR_INVALID_ARG_TYPE('request', 'string', request);
       }
       return Module._resolveFilename(request, mod, false, options);
     }
-  
+
     require.resolve = resolve;
-  
-    // function paths(request) {
-    //   if (typeof request !== 'string') {
-    //     throw new ERR_INVALID_ARG_TYPE('request', 'string', request);
-    //   }
-    //   return Module._resolveLookupPaths(request, mod, true);
-    // }
-  
-    // resolve.paths = paths;
   
     // Enable support to add extra extension types.
     require.extensions = Module._extensions;
@@ -40,27 +33,22 @@ function makeRequireFunction(mod) {
     return require;
   }
 
-function updateChildren(parent, child, scan) {
-    var children = parent && parent.children;
-    if (children && !(scan && children.includes(child)))
-        children.push(child);
-}
-
-function Module(id, parent) {
+function Module(id, parent, path) {
     this.id = id;
     this.exports = {};
     this.parent = parent;
-    // updateChildren(parent, this, false);
     this.filename = null;
     this.loaded = false;
-    this.children = [];
+    this.path = path;
 }
 
 Module._cache = Object.create(null);
 Module._pathCache = Object.create(null);
 Module._extensions = Object.create(null);
+
 var modulePaths = [];
 Module.globalPaths = [];
+
 
 Module.wrap = function (script) {
     return Module.wrapper[0] + script + Module.wrapper[1];
@@ -71,6 +59,7 @@ Module.wrapper = [
     '\n});'
 ];
 
+
 // Check the cache for the requested file.
 // 1. If a module already exists in the cache: return its exports object.
 // 2. Otherwise, create a new module for the file and save it to the cache.
@@ -78,19 +67,18 @@ Module.wrapper = [
 //    object.
 Module._load = function (request, parent, isMain) {
     if (parent) {
-        log('Module._load REQUEST %s parent: %s', request, parent.id);
+        sun.log('Module._load REQUEST %s parent: %s  this:%s', request, parent.id, this.id);
     }
-
     var filename = Module._resolveFilename(request, parent, isMain);
 
+    sun.log("file name === %s",filename);
     var cachedModule = Module._cache[filename];
     if (cachedModule) {
-        // updateChildren(parent, cachedModule, true);
         return cachedModule.exports;
     }
 
-    // Don't call updateChildren(), Module constructor already does.
-    var module = new Module(filename, parent);
+    var module = new Module(filename, parent, this.path);
+    sun.log("Module._load  module.id : %s",module.id);
 
     if (isMain) {
         module.id = '.';
@@ -119,7 +107,26 @@ Module._resolveFilename = function (request, parent, isMain) {
 
     // look up the filename first, since that's the cache key.
     // var filename = Module._findPath(request, paths, isMain);
-    var filename = "script/" + request + ".js";
+    var filePath;
+    var filename
+    if(isMain){
+        filePath = request;
+    }
+    if(parent){
+        while(request.indexOf("../") == 0){
+            var index = parent.path.substring(0,parent.path.length-1).lastIndexOf("/");
+            parent.path = parent.path.substring(0,index + 1);
+            request = request.substring(3,request.length);
+        }
+        filePath = parent.path + request;
+    }
+
+    filename = filePath + ".js";
+    var indexEnd = filePath.lastIndexOf("/");
+    filePath = filePath.substring(0, indexEnd + 1);
+    this.path = filePath;
+
+
     if (!filename) {
         // eslint-disable-next-line no-restricted-syntax
         var err = new Error(`Cannot find module '${request}'`);
@@ -132,9 +139,7 @@ Module._resolveFilename = function (request, parent, isMain) {
 
 // Given a file name, pass it to the proper extension handler.
 Module.prototype.load = function (filename) {
-    log('load %s for module %s', filename, this.id);
 
-    // assert(!this.loaded);
     this.filename = filename;
     // this.paths = Module._nodeModulePaths(path.dirname(filename));
 
@@ -148,6 +153,8 @@ Module.prototype.load = function (filename) {
 // Loads a module at the given file path. Returns that module's
 // `exports` property.
 Module.prototype.require = function (id) {
+    sun.log("require id = %s",id);
+
     if (typeof id !== 'string') {
         throw new ERR_INVALID_ARG_TYPE('id', 'string', id);
     }
@@ -155,57 +162,34 @@ Module.prototype.require = function (id) {
         throw new ERR_INVALID_ARG_VALUE('id', id,
             'must be a non-empty string');
     }
+
+
     return Module._load(id, this, /* isMain */ false);
 };
 
-
-// Resolved path to process.argv[1] will be lazily placed here
-// (needed for setting breakpoint when called with --inspect-brk)
-var resolvedArgv;
-
-
-// Run the file contents in the correct scope or sandbox. Expose
-// the correct helper variables (require, module, exports) to
-// the file.
-// Returns exception, if any.
 Module.prototype._compile = function (content, filename) {
-
-    // content = stripShebang(content);
-
-    // create wrapper function
     var wrapper = Module.wrap(content);
 
-    var compiledWrapper = compileJSCode(wrapper);
+    //字符串编译成js函数
+    var compiledWrapper = sun.compileJSCode(wrapper);
 
-
-    // var dirname = getDir(filename);
     var require = makeRequireFunction(this);
 
     var result;
 
+    //调用函数
     result = compiledWrapper(this.exports, require, this,
         filename);
-
     return result;
 };
 
-
-// Native extension for .js
 Module._extensions['.js'] = function (module, filename) {
-    var content = readFile(filename);
+    var content = sun.readFile(filename);
     module._compile(content, filename);
 };
 
-// bootstrap main module.
-Module.runMain = function () {
-    // Load the main module--the app main entrance.
-    //  Module._load(process.argv[1], null, true);
-    Module._load("main", null, true); // Currently fixed as main.js
-};
 
 // bootstrap main module.
 function runMain(){
-    // Load the main module--the app main entrance.
-    //  Module._load(process.argv[1], null, true);
-    Module._load("main", null, true); // Currently fixed as main.js
+    Module._load("script/main", null, true); // Currently fixed as main.js
 };

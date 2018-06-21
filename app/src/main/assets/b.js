@@ -1,0 +1,14 @@
+sun.log('b starting');
+sun.log('module.exports: ', module.exports);
+exports.done = false;
+const a = require('script/forwardDir/a');
+sun.log('in b, a.done = %s', a.done);
+exports.done = true;
+sun.log('module.id: ', module.id);
+sun.log('module.exports: ', module.exports);
+sun.log('module.parent: %s', module.parent);
+sun.log('module.filename: %s', module.filename);
+sun.log('module.loaded: %s', module.loaded);
+sun.log('module.children: %s', module.children);
+sun.log('module.paths: %s', module.paths);
+sun.log('b done');
