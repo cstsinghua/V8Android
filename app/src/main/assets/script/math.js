@@ -1,4 +1,5 @@
-log("math module");
+//log("math module");
+//var a = require("forwardDir/b")
 
 function add (a,b){
     return a + b;

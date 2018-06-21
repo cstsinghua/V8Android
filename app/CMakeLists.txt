@@ -4,7 +4,7 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.4.1)
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 
 add_library( v8_base
              STATIC
@@ -14,7 +14,7 @@ set_target_properties( # Specifies the target library.
 
                        # Specifies the parameter you want to define.
                        # Provides the path to the library you want to import.
-                       PROPERTIES IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/src/main/cpp/${ANDROID_ABI}/libv8_base.a )
+                       PROPERTIES IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libv8_base.a )
 
 
 add_library( v8_snapshot
@@ -25,7 +25,7 @@ set_target_properties( # Specifies the target library.
 
                        # Specifies the parameter you want to define.
                        # Provides the path to the library you want to import.
-                       PROPERTIES IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/src/main/cpp/${ANDROID_ABI}/libv8_snapshot.a )
+                       PROPERTIES IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libv8_snapshot.a )
 
 
 # Creates and names a library, sets it as either STATIC
@@ -41,13 +41,18 @@ add_library( # Sets the name of the library.
 
              # Provides a relative path to your source file(s).
              src/main/cpp/log.h
-             src/main/cpp/util.h
              src/main/cpp/util.cpp
-             src/main/cpp/Gamer.h
+             src/main/cpp/Person.cpp
              src/main/cpp/Gamer.cpp
+             src/main/cpp/v8pp/class.cpp
+             src/main/cpp/v8pp/context.cpp
+             src/main/cpp/v8pp/convert.cpp
+             src/main/cpp/v8pp/json.cpp
+             src/main/cpp/v8pp/throw_ex.cpp
              src/main/cpp/native-lib.cpp )
 
-include_directories(src/main/cpp/include)
+include_directories(src/main/cpp/include
+                    src/main/cpp)
 
 
 # Searches for a specified prebuilt library and stores the path as a
