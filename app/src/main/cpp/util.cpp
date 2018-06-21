@@ -172,46 +172,6 @@ Handle<Value> ExecuteJSScript2(Isolate *isolate, const char *path, bool print_re
     }
 }
 
-
-//execute javascript source code and return value
-Handle<Value> ExecuteJSScript3(Isolate *isolate, Local<String> source, bool print_result,
-                               bool report_exceptions) {
-
-    LOGI("ExecuteScript3");
-
-    EscapableHandleScope handle_scope(isolate);
-
-    TryCatch try_catch(isolate);
-
-    Local<Context> context(isolate->GetCurrentContext());
-    Local<Script> script;
-    if (!Script::Compile(context, source).ToLocal(&script)) {
-        // Print errors that happened during compilation.
-        if (report_exceptions)
-            ReportException(isolate, &try_catch);
-        return Undefined(isolate);
-    } else {
-        Local<Value> result;
-        if (!script->Run(context).ToLocal(&result)) {
-            assert(try_catch.HasCaught());
-            // Print errors that happened during execution.
-            if (report_exceptions)
-                ReportException(isolate, &try_catch);
-            return Undefined(isolate);
-        } else {
-            assert(!try_catch.HasCaught());
-            if (print_result && !result->IsUndefined()) {
-                // If all went well and the result wasn't undefined then print
-                // the returned value.
-                String::Utf8Value str(isolate, result);
-//                LOGI("===========\n%s\n", *str);
-            }
-            return handle_scope.Escape(result);
-        }
-    }
-}
-
-
 //execute javascript source code and return value
 Handle<Value> ExecuteJSScript3(Isolate *isolate, Local<String> source, bool print_result,
                                bool report_exceptions) {
