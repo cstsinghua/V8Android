@@ -15,12 +15,14 @@ function makeRequireFunction(mod) {
     }
 
     //有可能在创建模块之前使用到该函数，类似于静态函数
+
     function resolve(request, options) {
       if (typeof request !== 'string') {
         throw new ERR_INVALID_ARG_TYPE('request', 'string', request);
       }
       return Module._resolveFilename(request, mod, false, options);
     }
+
     require.resolve = resolve;
   
     // Enable support to add extra extension types.
@@ -44,6 +46,10 @@ Module._cache = Object.create(null);
 Module._pathCache = Object.create(null);
 Module._extensions = Object.create(null);
 
+var modulePaths = [];
+Module.globalPaths = [];
+
+
 Module.wrap = function (script) {
     return Module.wrapper[0] + script + Module.wrapper[1];
 };
@@ -53,6 +59,12 @@ Module.wrapper = [
     '\n});'
 ];
 
+
+// Check the cache for the requested file.
+// 1. If a module already exists in the cache: return its exports object.
+// 2. Otherwise, create a new module for the file and save it to the cache.
+//    Then have it load  the file contents before returning its exports
+//    object.
 Module._load = function (request, parent, isMain) {
     if (parent) {
         sun.log('Module._load REQUEST %s parent: %s  this:%s', request, parent.id, this.id);
@@ -67,11 +79,13 @@ Module._load = function (request, parent, isMain) {
 
     var module = new Module(filename, parent, this.path);
     sun.log("Module._load  module.id : %s",module.id);
+
     if (isMain) {
         module.id = '.';
     }
 
     Module._cache[filename] = module;
+
     tryModuleLoad(module, filename);
 
     return module.exports;
@@ -112,6 +126,7 @@ Module._resolveFilename = function (request, parent, isMain) {
     filePath = filePath.substring(0, indexEnd + 1);
     this.path = filePath;
 
+
     if (!filename) {
         // eslint-disable-next-line no-restricted-syntax
         var err = new Error(`Cannot find module '${request}'`);
@@ -124,6 +139,7 @@ Module._resolveFilename = function (request, parent, isMain) {
 
 // Given a file name, pass it to the proper extension handler.
 Module.prototype.load = function (filename) {
+
     this.filename = filename;
     // this.paths = Module._nodeModulePaths(path.dirname(filename));
 
@@ -138,6 +154,7 @@ Module.prototype.load = function (filename) {
 // `exports` property.
 Module.prototype.require = function (id) {
     sun.log("require id = %s",id);
+
     if (typeof id !== 'string') {
         throw new ERR_INVALID_ARG_TYPE('id', 'string', id);
     }
@@ -145,6 +162,7 @@ Module.prototype.require = function (id) {
         throw new ERR_INVALID_ARG_VALUE('id', id,
             'must be a non-empty string');
     }
+
 
     return Module._load(id, this, /* isMain */ false);
 };

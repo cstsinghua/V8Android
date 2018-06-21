@@ -58,6 +58,7 @@ void js_log(const FunctionCallbackInfo<Value> &args) {
     std::string printstr("");
     for (int i = 0; i < len; ++i) {
         String::Utf8Value utf8(isolate_, args[i]);
+
         if (i == 0) {
             printstr.append(ToCString(utf8));
         } else {
