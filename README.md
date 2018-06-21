@@ -3,7 +3,7 @@ A demo APP for embedding V8 engine in Android APP
 
 1.git clone https://github.com/cstsinghua/V8Android.git;
 
-2.enter app/src/main/cpp/static_lib directory,unzip v8_arm_arm64.zip,then copy all subdirs(arm64-v8a/armeabi-v7a/include/v8_src_include) to app/src/main/cpp directory(overwrite the old files);
+2.(Optional)enter app/src/main/cpp/static_lib directory,unzip v8_arm_arm64.zip,then copy arm64-v8a and armeabi-v7a subdirs to app/src/main/jniLibs directory(overwrite the old files);
 
 3.open Android studio(version 3.1 is recommended),open and load this project;
 
